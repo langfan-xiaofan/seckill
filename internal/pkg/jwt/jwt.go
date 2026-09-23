@@ -10,11 +10,11 @@ import (
 
 type MyClaims struct {
 	Username string `json:"username"`
-	UserID   uint   `json:"user_id"`
+	UserID   uint64 `json:"user_id"`
 	jwt.RegisteredClaims
 }
 
-func GenerateToken(username string, userID uint) (string, error) {
+func GenerateToken(username string, userID uint64) (string, error) {
 	claims := MyClaims{
 		username,
 		userID,

@@ -3,6 +3,7 @@ package infra
 import (
 	"fmt"
 	"seckill/internal/config"
+	"seckill/internal/model"
 	"time"
 
 	"gorm.io/driver/mysql"
@@ -14,7 +15,7 @@ func InitMysql() (*gorm.DB, error) {
 	var err error
 	var db *gorm.DB
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		config.Conf.Mysql.Username,
+		config.Conf.Mysql.User,
 		config.Conf.Mysql.Password,
 		config.Conf.Mysql.Host,
 		config.Conf.Mysql.Port,
@@ -24,6 +25,7 @@ func InitMysql() (*gorm.DB, error) {
 		PrepareStmt:            true,
 		SkipDefaultTransaction: true,
 		NowFunc:                time.Now,
+		TranslateError:         true,
 	}); err != nil {
 		err = fmt.Errorf("连接 MySQL 失败，请确认数据库已启动且 config.yaml 的 database 配置正确: %w", err)
 		return nil, err
@@ -36,5 +38,17 @@ func InitMysql() (*gorm.DB, error) {
 	sqlDB.SetMaxOpenConns(100)
 	sqlDB.SetConnMaxLifetime(time.Hour)
 	sqlDB.SetConnMaxIdleTime(10 * time.Minute)
+	err = db.AutoMigrate(
+		model.User{},
+		model.Order{},
+		model.Sku{},
+		model.Activity{},
+		model.PayRecord{},
+		model.ReconcileDiff{},
+		model.Stock{},
+	)
+	if err != nil {
+		return nil, err
+	}
 	return db, err
 }
